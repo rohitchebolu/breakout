@@ -1,0 +1,4 @@
+# Never ship local env files to Vercel — set secrets in the Vercel env store
+# (Project → Settings → Environment Variables) instead.
+.env
+.env.*
