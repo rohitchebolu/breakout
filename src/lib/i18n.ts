@@ -83,7 +83,7 @@ export const translations: Record<Lang, Dict> = {
     findOutliers: "Find outliers",
     analyzing: "Analyzing",
     tryLabel: "Try:",
-    channelExamples: ["Telugu Tech Tuts", "Vismai Food", "Chai Bisket"],
+    channelExamples: ["Prasad Tech", "Vismai Food", "Fashion Verge", "Chai Bisket"],
     topicExamples: ["telugu recipes", "movie review", "cricket highlights"],
     filterAll: "All",
     fmtAll: "All",
@@ -133,7 +133,7 @@ export const translations: Record<Lang, Dict> = {
     findOutliers: "Outliers చూపించు",
     analyzing: "వెతుకుతున్నా...",
     tryLabel: "ఇవి try చెయ్:",
-    channelExamples: ["Telugu Tech Tuts", "Vismai Food", "Chai Bisket"],
+    channelExamples: ["Prasad Tech", "Vismai Food", "Fashion Verge", "Chai Bisket"],
     topicExamples: ["తెలుగు వంటలు", "cinema review", "cricket highlights"],
     // filters / sort — clean data labels
     filterAll: "అన్నీ",

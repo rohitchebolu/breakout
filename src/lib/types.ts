@@ -23,6 +23,8 @@ export interface VideoOutlier {
   modifiedZ?: number;
   /** Whether the video was scored as a Short or long-form. */
   format?: "short" | "long";
+  /** Full video description (for the swipe-file modal). */
+  description?: string;
 }
 
 export interface ChannelInfo {

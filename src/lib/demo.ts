@@ -68,6 +68,7 @@ export function demoChannel(query: string): { channel: RawChannel; videos: RawVi
     publishedAt: daysAgo(age),
     views,
     durationSeconds: dur,
+    description: `${title}\n\nSample demo description — add a YOUTUBE_API_KEY to see real video descriptions here.\n\n#telugu #youtube #shorts`,
   }));
 
   const channel: RawChannel = {

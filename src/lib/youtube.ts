@@ -13,6 +13,7 @@ export interface RawVideo {
   views: number;
   durationSeconds?: number;
   audioLanguage?: string;
+  description?: string;
 }
 
 export interface RawChannel {
@@ -248,6 +249,7 @@ async function fetchVideos(ids: string[], fallbackChannelTitle = ""): Promise<Ra
         views: numeric(it.statistics?.viewCount) ?? 0,
         durationSeconds: parseDuration(it.contentDetails?.duration),
         audioLanguage: it.snippet?.defaultAudioLanguage ?? it.snippet?.defaultLanguage,
+        description: it.snippet?.description,
       });
     }
   }
@@ -277,6 +279,7 @@ interface RawVideoItem {
     thumbnails?: Thumbs;
     defaultAudioLanguage?: string;
     defaultLanguage?: string;
+    description?: string;
   };
   statistics?: { viewCount?: string };
   contentDetails?: { duration?: string };

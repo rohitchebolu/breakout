@@ -18,9 +18,11 @@ function WhatsAppIcon({ className }: { className?: string }) {
 export function VideoCard({
   video,
   showChannel,
+  onOpen,
 }: {
   video: VideoOutlier;
   showChannel?: boolean;
+  onOpen: () => void;
 }) {
   const { d, lang } = useLang();
   const s = tierStyles[video.tier];
@@ -36,7 +38,16 @@ export function VideoCard({
 
   return (
     <div
-      className={`group relative flex flex-col overflow-hidden rounded-xl bg-zinc-900/60 ring-1 ring-inset ring-zinc-800 transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-900 ${s.ring}`}
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl bg-zinc-900/60 ring-1 ring-inset ring-zinc-800 transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 ${s.ring}`}
     >
       <div className="relative aspect-video overflow-hidden bg-zinc-800">
         <img
@@ -90,15 +101,6 @@ export function VideoCard({
           </span>
         </p>
       </div>
-
-      {/* Stretched link over the whole card (below the share button) */}
-      <a
-        href={watchUrl}
-        target="_blank"
-        rel="noreferrer noopener"
-        aria-label={video.title}
-        className="absolute inset-0 z-10 rounded-xl"
-      />
     </div>
   );
 }

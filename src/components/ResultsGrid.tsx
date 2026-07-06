@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import type { VideoOutlier } from "@/lib/types";
 import { VideoCard } from "./VideoCard";
+import { VideoModal } from "./VideoModal";
 
 export function ResultsGrid({
   results,
@@ -8,12 +12,22 @@ export function ResultsGrid({
   results: VideoOutlier[];
   showChannel?: boolean;
 }) {
+  const [selected, setSelected] = useState<VideoOutlier | null>(null);
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {results.map((v) => (
-        <VideoCard key={v.id + v.publishedAt} video={v} showChannel={showChannel} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {results.map((v) => (
+          <VideoCard
+            key={v.id + v.publishedAt}
+            video={v}
+            showChannel={showChannel}
+            onOpen={() => setSelected(v)}
+          />
+        ))}
+      </div>
+      {selected && <VideoModal video={selected} onClose={() => setSelected(null)} />}
+    </>
   );
 }
 

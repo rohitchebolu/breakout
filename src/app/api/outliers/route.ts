@@ -30,6 +30,7 @@ function toVideoOutlier(v: RawVideo, s: Scored): VideoOutlier {
     views: v.views,
     publishedAt: v.publishedAt,
     durationSeconds: v.durationSeconds,
+    description: v.description,
     outlierScore: s.outlierScore,
     baseline: s.baseline,
     tier: s.tier,
@@ -69,7 +70,8 @@ export async function GET(req: NextRequest) {
   }
 
   const normalized = query.toLowerCase().replace(/\s+/g, " ").trim();
-  const cacheKey = `outliers:channel:${normalized}`;
+  // Bump the version when the cached payload shape changes (e.g. added description).
+  const cacheKey = `outliers:v2:${normalized}`;
 
   // 1) Serve from cache — free, and doesn't consume the rate limit.
   const cached = await cacheGet(cacheKey);
