@@ -3,6 +3,7 @@ import { hasApiKey, YouTubeError } from "@/lib/youtube";
 import { cacheGet, clientIp, rateLimit } from "@/lib/store";
 import { categories } from "@/lib/creators";
 import { refreshCategory, topOutliersCacheKey } from "@/lib/topOutliers";
+import { trackBreakouts } from "@/lib/analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,8 @@ export async function GET(req: NextRequest) {
   if (!cat) {
     return NextResponse.json({ error: "Unknown category." }, { status: 400 });
   }
+
+  trackBreakouts(cat.key);
 
   if (!hasApiKey()) {
     return NextResponse.json({

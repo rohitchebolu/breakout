@@ -5,6 +5,7 @@ import { getVideoById, hasApiKey } from "@/lib/youtube";
 import { isShort } from "@/lib/outliers";
 import { cacheGet, cacheSet, clientIp, consumeLlmBudget, rateLimit } from "@/lib/store";
 import { verifyVideoSig } from "@/lib/sign";
+import { trackAnalyze } from "@/lib/analytics";
 import type { Lang } from "@/lib/i18n";
 import type { VideoOutlier } from "@/lib/types";
 
@@ -47,7 +48,9 @@ export async function POST(req: NextRequest) {
   const cached = await cacheGet(cacheKey);
   if (cached) {
     try {
-      return NextResponse.json({ analysis: JSON.parse(cached), cached: true });
+      const analysis = JSON.parse(cached);
+      trackAnalyze(lang);
+      return NextResponse.json({ analysis, cached: true });
     } catch {
       // corrupt entry — fall through and recompute
     }
@@ -95,6 +98,7 @@ export async function POST(req: NextRequest) {
     );
 
     await cacheSet(cacheKey, JSON.stringify(analysis), CACHE_TTL_SECONDS);
+    trackAnalyze(lang);
     return NextResponse.json({ analysis, transcriptUsed: Boolean(transcript) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Analysis failed.";

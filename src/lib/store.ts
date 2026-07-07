@@ -159,3 +159,46 @@ export async function ping(): Promise<boolean> {
     return false;
   }
 }
+
+// --- analytics counters --------------------------------------------------------
+
+async function redisPipeline(commands: (string | number)[][]): Promise<void> {
+  const res = await fetch(`${REDIS_URL as string}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(commands),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Redis pipeline ${res.status}`);
+}
+
+function memIncr(key: string): void {
+  const e = mem.get(key);
+  if (e && Date.now() <= e.expiresAt) e.value = String(Number(e.value) + 1);
+  else mem.set(key, { value: "1", expiresAt: Number.MAX_SAFE_INTEGER });
+}
+
+/** Increment a batch of analytics counters. Never throws — analytics is best-effort. */
+export async function bumpCounters(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  try {
+    if (hasRedis) await redisPipeline(keys.map((k) => ["INCR", k]));
+    else keys.forEach(memIncr);
+  } catch {
+    // analytics must never break a request
+  }
+}
+
+/** Read a batch of counters; 0 for any missing key. */
+export async function readCounters(keys: string[]): Promise<number[]> {
+  if (keys.length === 0) return [];
+  try {
+    if (hasRedis) {
+      const res = (await redis(["MGET", ...keys])) as (string | null)[] | null;
+      return (res ?? []).map((v) => Number(v) || 0);
+    }
+    return keys.map((k) => Number(memGet(k)) || 0);
+  } catch {
+    return keys.map(() => 0);
+  }
+}

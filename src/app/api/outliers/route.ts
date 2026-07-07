@@ -10,6 +10,7 @@ import { computeChannelOutliers, type Scored } from "@/lib/outliers";
 import { demoChannel } from "@/lib/demo";
 import { cacheGet, cacheSet, clientIp, rateLimit } from "@/lib/store";
 import { signVideo } from "@/lib/sign";
+import { trackSearch } from "@/lib/analytics";
 import type { OutlierResponse, VideoOutlier } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -57,6 +58,8 @@ export async function GET(req: NextRequest) {
   if (!query) {
     return NextResponse.json({ error: "Enter a channel to search." }, { status: 400 });
   }
+
+  trackSearch();
 
   const generatedAt = new Date().toISOString();
 
