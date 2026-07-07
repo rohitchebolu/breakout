@@ -11,6 +11,7 @@ import {
 import { computeChannelOutliers, type Scored } from "@/lib/outliers";
 import { analysisConfigured, findCategoryTrend, type CategoryTrend } from "@/lib/analysis";
 import { cacheSet } from "@/lib/store";
+import { signVideo } from "@/lib/sign";
 import type { Category } from "@/lib/creators";
 import type { VideoOutlier } from "@/lib/types";
 
@@ -27,9 +28,9 @@ export interface TopOutliersBody {
   generatedAt: string;
 }
 
-/** v3 recomputes trends via Groq; bump invalidates the stale Gemini-era cache. */
+/** v4 adds per-result sigs (on top of Groq trends); bump forces a clean recompute. */
 export function topOutliersCacheKey(catKey: string): string {
-  return `topoutliers:v3:${catKey}`;
+  return `topoutliers:v4:${catKey}`;
 }
 
 function toVideoOutlier(v: RawVideo, s: Scored, channelThumbnail?: string): VideoOutlier {
@@ -49,6 +50,7 @@ function toVideoOutlier(v: RawVideo, s: Scored, channelThumbnail?: string): Vide
     tier: s.tier,
     modifiedZ: s.modifiedZ,
     format: s.format,
+    sig: signVideo(v.id),
   };
 }
 

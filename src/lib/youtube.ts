@@ -176,6 +176,12 @@ export async function getChannelVideos(channel: RawChannel, max = 50): Promise<R
   return fetchVideos(videoIds.slice(0, max), channel.title);
 }
 
+/** Fetch one video's authoritative metadata by ID (1 quota unit). */
+export async function getVideoById(id: string): Promise<RawVideo | null> {
+  const [video] = await fetchVideos([id]);
+  return video ?? null;
+}
+
 /** Discover channels for a topic (Telugu-biased). Returns channel IDs. */
 export async function searchChannels(query: string, max = 15): Promise<string[]> {
   const search = await yt<{ items?: Array<{ id?: { channelId?: string } }> }>("search", {

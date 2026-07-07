@@ -8,7 +8,8 @@ import {
 } from "@/lib/youtube";
 import { computeChannelOutliers, type Scored } from "@/lib/outliers";
 import { demoChannel } from "@/lib/demo";
-import { cacheGet, cacheSet, rateLimit } from "@/lib/store";
+import { cacheGet, cacheSet, clientIp, rateLimit } from "@/lib/store";
+import { signVideo } from "@/lib/sign";
 import type { OutlierResponse, VideoOutlier } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -36,6 +37,7 @@ function toVideoOutlier(v: RawVideo, s: Scored): VideoOutlier {
     tier: s.tier,
     modifiedZ: s.modifiedZ,
     format: s.format,
+    sig: signVideo(v.id),
   };
 }
 
@@ -47,12 +49,6 @@ function scoreChannel(videos: RawVideo[]) {
     baseline,
     method,
   };
-}
-
-function clientIp(req: NextRequest): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "local";
 }
 
 export async function GET(req: NextRequest) {
@@ -70,8 +66,8 @@ export async function GET(req: NextRequest) {
   }
 
   const normalized = query.toLowerCase().replace(/\s+/g, " ").trim();
-  // Bump the version when the cached payload shape changes (e.g. added description).
-  const cacheKey = `outliers:v2:${normalized}`;
+  // Bump the version when the cached payload shape changes (e.g. added sigs).
+  const cacheKey = `outliers:v3:${normalized}`;
 
   // 1) Serve from cache — free, and doesn't consume the rate limit.
   const cached = await cacheGet(cacheKey);

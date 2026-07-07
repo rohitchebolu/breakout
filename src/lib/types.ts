@@ -27,6 +27,8 @@ export interface VideoOutlier {
   description?: string;
   /** Channel avatar — shown on cross-channel feeds (e.g. Top breakouts). */
   channelThumbnail?: string;
+  /** HMAC over the ID — proves we surfaced this video; required by /api/analyze. */
+  sig?: string;
 }
 
 export interface ChannelInfo {

@@ -59,20 +59,26 @@ function memSet(key: string, value: string, ttlSec: number): void {
 // --- public API ----------------------------------------------------------------
 
 export async function cacheGet(key: string): Promise<string | null> {
-  try {
-    return hasRedis ? ((await redis(["GET", key])) as string | null) : memGet(key);
-  } catch {
-    return null; // fail-open: treat store errors as a cache miss
+  if (hasRedis) {
+    try {
+      return (await redis(["GET", key])) as string | null;
+    } catch {
+      // Redis unreachable — fall back to the per-instance cache below.
+    }
   }
+  return memGet(key);
 }
 
 export async function cacheSet(key: string, value: string, ttlSec: number): Promise<void> {
-  try {
-    if (hasRedis) await redis(["SET", key, value, "EX", ttlSec]);
-    else memSet(key, value, ttlSec);
-  } catch {
-    // ignore cache write failures — never break a request over the cache
+  if (hasRedis) {
+    try {
+      await redis(["SET", key, value, "EX", ttlSec]);
+      return;
+    } catch {
+      // Redis unreachable — write to the per-instance cache instead.
+    }
   }
+  memSet(key, value, ttlSec);
 }
 
 export interface RateResult {
@@ -81,29 +87,62 @@ export interface RateResult {
   limit: number;
 }
 
+/** Per-instance token bucket — used directly (no Redis) and as the fallback. */
+function memRate(key: string, limit: number, windowSec: number): RateResult {
+  const now = Date.now();
+  const e = mem.get(key);
+  if (!e || now > e.expiresAt) {
+    mem.set(key, { value: "1", expiresAt: now + windowSec * 1000 });
+    return { allowed: true, remaining: limit - 1, limit };
+  }
+  const count = Number(e.value) + 1;
+  e.value = String(count);
+  return { allowed: count <= limit, remaining: Math.max(0, limit - count), limit };
+}
+
 export async function rateLimit(
   key: string,
   limit: number,
   windowSec: number,
 ): Promise<RateResult> {
-  try {
-    if (hasRedis) {
+  if (hasRedis) {
+    try {
       const count = Number(await redis(["INCR", key]));
       if (count === 1) await redis(["EXPIRE", key, windowSec]);
       return { allowed: count <= limit, remaining: Math.max(0, limit - count), limit };
+    } catch {
+      // Redis unreachable — fall back to the per-instance limiter below so an
+      // outage bounds cost per instance instead of failing fully open.
     }
-    const now = Date.now();
-    const e = mem.get(key);
-    if (!e || now > e.expiresAt) {
-      mem.set(key, { value: "1", expiresAt: now + windowSec * 1000 });
-      return { allowed: true, remaining: limit - 1, limit };
-    }
-    const count = Number(e.value) + 1;
-    e.value = String(count);
-    return { allowed: count <= limit, remaining: Math.max(0, limit - count), limit };
-  } catch {
-    return { allowed: true, remaining: limit, limit }; // fail-open
   }
+  return memRate(key, limit, windowSec);
+}
+
+/**
+ * Best-effort client IP for rate-limiting. Prefers Vercel's single-value
+ * x-real-ip over x-forwarded-for (whose first entry a client can pre-seed).
+ * IP-based limits are inherently best-effort — a determined actor can rotate.
+ */
+export function clientIp(req: Request): string {
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return "local";
+}
+
+const LLM_DAILY_BUDGET = Number(process.env.LLM_DAILY_BUDGET) || 800;
+
+/**
+ * Global (all-IP) daily ceiling on LLM calls — a hard backstop so no amount of
+ * distributed traffic can fully drain the provider's free quota or run away.
+ * Returns true when a call fits in today's budget. Set LLM_DAILY_BUDGET to tune.
+ * (Truly global while Redis is up; per-instance during a Redis outage.)
+ */
+export async function consumeLlmBudget(): Promise<boolean> {
+  const day = new Date().toISOString().slice(0, 10);
+  const res = await rateLimit(`budget:llm:${day}`, LLM_DAILY_BUDGET, 60 * 60 * 26);
+  return res.allowed;
 }
 
 /** Which backend is active: "redis" when Upstash is configured, else "memory". */
