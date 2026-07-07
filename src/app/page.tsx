@@ -168,6 +168,8 @@ export default function Home() {
           )}
         </section>
       </main>
+
+      <SeoFooter />
     </div>
   );
 }
@@ -373,5 +375,47 @@ function Explainer() {
         </div>
       ))}
     </div>
+  );
+}
+
+// Keyword-rich, crawlable footer (About + FAQ) with FAQ structured data — the
+// static content Google needs to rank a tool page. Bilingual via the UI language.
+function SeoFooter() {
+  const { d } = useLang();
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: d.faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
+  return (
+    <footer className="border-t border-zinc-800/80 bg-zinc-950">
+      <div className="mx-auto w-full max-w-3xl px-4 py-12">
+        <h2 className="text-sm font-semibold text-zinc-200">{d.aboutTitle}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">{d.aboutBody}</p>
+
+        <h2 className="mt-8 text-sm font-semibold text-zinc-200">{d.faqTitle}</h2>
+        <dl className="mt-3 space-y-4">
+          {d.faqs.map((f) => (
+            <div key={f.q}>
+              <dt className="text-sm font-medium text-zinc-200">{f.q}</dt>
+              <dd className="mt-1 text-sm leading-relaxed text-zinc-500">{f.a}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-10 text-xs text-zinc-600">
+          © {new Date().getFullYear()} Breakout · thebreakout.in
+        </p>
+      </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+    </footer>
   );
 }

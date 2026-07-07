@@ -75,6 +75,11 @@ export interface Dict {
   analysisUnavailable: string;
   aiDisclaimer: string;
   trendingNow: string;
+  // seo footer
+  aboutTitle: string;
+  aboutBody: string;
+  faqTitle: string;
+  faqs: { q: string; a: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -151,6 +156,28 @@ export const translations: Record<Lang, Dict> = {
     analysisUnavailable: "Couldn't break this one down — open it on YouTube instead.",
     aiDisclaimer: "AI-generated — sanity-check before using.",
     trendingNow: "Trending now",
+    aboutTitle: "About Breakout",
+    aboutBody:
+      "Breakout is a free YouTube outlier finder made for Telugu creators. Paste any channel and instantly see its breakout videos — the ones that got far more views than the channel usually gets — so you can copy the ideas, titles, and thumbnails that actually go viral.",
+    faqTitle: "Frequently asked questions",
+    faqs: [
+      {
+        q: "What is a YouTube outlier?",
+        a: "An outlier is a video that got far more views than a channel's typical video. Breakout scores every video against the channel's own baseline, so a small channel's viral hit stands out just like a big channel's.",
+      },
+      {
+        q: "Is Breakout free?",
+        a: "Yes — Breakout is completely free. Paste any Telugu YouTube channel and instantly see its breakout videos, plus the ideas and thumbnails that worked.",
+      },
+      {
+        q: "How does it find viral videos?",
+        a: "It compares each video's views to the channel's median performance and flags the ones that beat it by 2x, 5x, or 10x and more.",
+      },
+      {
+        q: "Does it work for Telugu channels?",
+        a: "Yes. Breakout is built Telugu-first — the whole experience is available in Telugu — and it works for any YouTube channel.",
+      },
+    ],
   },
   te: {
     // functional / brand
@@ -227,6 +254,28 @@ export const translations: Record<Lang, Dict> = {
     analysisUnavailable: "దీన్ని analyze చెయ్యలేకపోయా — YouTube లో చూడు.",
     aiDisclaimer: "AI generate చేసింది — use చేసేముందు ఒకసారి check చెయ్.",
     trendingNow: "ఇప్పుడు trending",
+    aboutTitle: "Breakout గురించి",
+    aboutBody:
+      "Breakout అనేది Telugu creators కోసం ఉచిత YouTube outlier finder. ఏ channel అయినా paste చెయ్, దాని breakout videos — channel కి మామూలుగా వచ్చే views కంటే చాలా ఎక్కువ views వచ్చిన videos — వెంటనే చూడు. ఏ idea, title, thumbnail viral అయ్యిందో copy చెయ్.",
+    faqTitle: "తరచుగా అడిగే ప్రశ్నలు",
+    faqs: [
+      {
+        q: "YouTube outlier అంటే ఏమిటి?",
+        a: "Channel కి మామూలుగా వచ్చే views కంటే చాలా ఎక్కువ views వచ్చిన video ని outlier అంటారు. Breakout ప్రతి video ని ఆ channel baseline తో compare చేస్తుంది, అందుకే చిన్న channel viral hit కూడా పెద్ద channel లాగే కనిపిస్తుంది.",
+      },
+      {
+        q: "Breakout ఉచితమా?",
+        a: "అవును — Breakout పూర్తిగా ఉచితం. ఏ Telugu YouTube channel అయినా paste చేసి, దాని breakout videos, పని చేసిన ideas, thumbnails వెంటనే చూడు.",
+      },
+      {
+        q: "Viral videos ని ఎలా కనుక్కుంటుంది?",
+        a: "ప్రతి video views ని channel median performance తో compare చేసి, 2x, 5x, 10x కంటే ఎక్కువ దూసుకుపోయిన వాటిని చూపిస్తుంది.",
+      },
+      {
+        q: "Telugu channels కి పని చేస్తుందా?",
+        a: "అవును. Breakout Telugu-first గా తయారైంది — మొత్తం experience Telugu లో ఉంది — ఏ YouTube channel కి అయినా పని చేస్తుంది.",
+      },
+    ],
   },
 };
 
