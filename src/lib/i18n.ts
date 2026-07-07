@@ -55,6 +55,26 @@ export interface Dict {
   outlierScale: string;
   // error
   errorTitle: string;
+  // video modal
+  secTitle: string;
+  secVideo: string;
+  secThumbnail: string;
+  copyWord: string;
+  copiedWord: string;
+  openWord: string;
+  downloadWord: string;
+  // AI breakdown
+  breakdownHeading: string;
+  aHook: string;
+  aWhy: string;
+  aTitleTips: string;
+  aThumbTips: string;
+  aOutline: string;
+  aTakeaways: string;
+  analyzingVideo: string;
+  analysisUnavailable: string;
+  aiDisclaimer: string;
+  trendingNow: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +133,24 @@ export const translations: Record<Lang, Dict> = {
     step3Body: "Outlier score = a video's views ÷ that baseline.",
     outlierScale: "Outlier scale:",
     errorTitle: "Couldn't load results",
+    secTitle: "Title",
+    secVideo: "Video",
+    secThumbnail: "Thumbnail",
+    copyWord: "Copy",
+    copiedWord: "Copied",
+    openWord: "Open",
+    downloadWord: "Download",
+    breakdownHeading: "Breakdown",
+    aHook: "Hook",
+    aWhy: "Why it broke out",
+    aTitleTips: "Title",
+    aThumbTips: "Thumbnail",
+    aOutline: "Outline",
+    aTakeaways: "Takeaways",
+    analyzingVideo: "Breaking down this video…",
+    analysisUnavailable: "Couldn't break this one down — open it on YouTube instead.",
+    aiDisclaimer: "AI-generated — sanity-check before using.",
+    trendingNow: "Trending now",
   },
   te: {
     // functional / brand
@@ -169,6 +207,26 @@ export const translations: Record<Lang, Dict> = {
     outlierScale: "Outlier scale:",
     // error — casual
     errorTitle: "అయ్యో, results రాలేదు 😕",
+    // video modal
+    secTitle: "Title",
+    secVideo: "Video",
+    secThumbnail: "Thumbnail",
+    copyWord: "Copy",
+    copiedWord: "Copy అయింది",
+    openWord: "Open",
+    downloadWord: "Download",
+    // AI breakdown
+    breakdownHeading: "Breakdown",
+    aHook: "Hook",
+    aWhy: "ఎందుకు viral అయింది",
+    aTitleTips: "Title",
+    aThumbTips: "Thumbnail",
+    aOutline: "Outline",
+    aTakeaways: "నేర్చుకోవాల్సినవి",
+    analyzingVideo: "ఈ video ని analyze చేస్తున్నా…",
+    analysisUnavailable: "దీన్ని analyze చెయ్యలేకపోయా — YouTube లో చూడు.",
+    aiDisclaimer: "AI generate చేసింది — use చేసేముందు ఒకసారి check చెయ్.",
+    trendingNow: "ఇప్పుడు trending",
   },
 };
 

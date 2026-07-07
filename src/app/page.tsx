@@ -7,6 +7,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { StatsSummary } from "@/components/StatsSummary";
 import { ResultsGrid, SkeletonGrid } from "@/components/ResultsGrid";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { TopCreators } from "@/components/TopCreators";
 import { Dropdown } from "@/components/Dropdown";
 import { useLang } from "@/components/LanguageProvider";
 import { tierLabels, videosCount } from "@/lib/i18n";
@@ -197,7 +198,10 @@ function Header({ onReset }: { onReset: () => void }) {
             <span className="block text-xs text-zinc-400">{d.tagline}</span>
           </span>
         </button>
-        <LanguageToggle />
+        <div className="flex items-center gap-2">
+          <TopCreators />
+          <LanguageToggle />
+        </div>
       </div>
     </header>
   );

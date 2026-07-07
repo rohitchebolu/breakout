@@ -1,15 +1,29 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Check, Copy, Download, ExternalLink, X } from "lucide-react";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Image as ImageIcon,
+  Lightbulb,
+  ListOrdered,
+  Loader2,
+  Sparkles,
+  TrendingUp,
+  Type,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { formatCompact, timeAgo } from "@/lib/format";
+import type { VideoAnalysis } from "@/lib/analysis";
 import type { VideoOutlier } from "@/lib/types";
 import { useLang } from "./LanguageProvider";
 import { OutlierBadge } from "./OutlierBadge";
 
 function CopyButton({ text }: { text: string }) {
+  const { d } = useLang();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -30,7 +44,7 @@ function CopyButton({ text }: { text: string }) {
       }`}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? "Copied" : "Copy"}
+      {copied ? d.copiedWord : d.copyWord}
     </button>
   );
 }
@@ -55,11 +69,78 @@ function Section({
   );
 }
 
+/** One labeled paragraph in the breakdown. Renders nothing when empty. */
+function AItem({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: string }) {
+  if (!children) return null;
+  return (
+    <div className="rounded-lg bg-zinc-800/50 p-3 ring-1 ring-inset ring-zinc-800">
+      <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
+        <Icon className="h-3.5 w-3.5 text-rose-400" />
+        {label}
+      </div>
+      <p className="text-sm leading-relaxed text-zinc-300">{children}</p>
+    </div>
+  );
+}
+
+/** A labeled bullet list in the breakdown. */
+function AList({ icon: Icon, label, items }: { icon: LucideIcon; label: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-lg bg-zinc-800/50 p-3 ring-1 ring-inset ring-zinc-800">
+      <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
+        <Icon className="h-3.5 w-3.5 text-rose-400" />
+        {label}
+      </div>
+      <ul className="space-y-1">
+        {items.map((it, i) => (
+          <li key={i} className="flex gap-2 text-sm leading-relaxed text-zinc-300">
+            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-rose-400/70" />
+            <span>{it}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AnalysisSkeleton({ text }: { text: string }) {
+  const widths = ["w-full", "w-11/12", "w-4/6"];
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {text}
+      </div>
+      <div className="space-y-2">
+        {widths.map((w) => (
+          <div key={w} className={`h-3 animate-pulse rounded bg-zinc-800 ${w}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type Status = "loading" | "done" | "error";
+
 export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: () => void }) {
-  const { lang } = useLang();
-  const description = video.description?.trim() ?? "";
+  const { d, lang } = useLang();
   const watchUrl = `https://www.youtube.com/watch?v=${video.id}`;
   const embedUrl = `https://www.youtube.com/embed/${video.id}`;
+
+  const [analysis, setAnalysis] = useState<VideoAnalysis | null>(null);
+  const [status, setStatus] = useState<Status>("loading");
+
+  // Reset to loading the moment the video or language changes — done during
+  // render (React's "adjust state on prop change" pattern) so the fetch effect
+  // never calls setState synchronously in its body.
+  const reqKey = `${video.id}:${lang}`;
+  const [syncedKey, setSyncedKey] = useState(reqKey);
+  if (reqKey !== syncedKey) {
+    setSyncedKey(reqKey);
+    setAnalysis(null);
+    setStatus("loading");
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -72,6 +153,48 @@ export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: (
       document.body.style.overflow = "";
     };
   }, [onClose]);
+
+  // Fetch the AI breakdown on open (and when the language changes).
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch("/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ video, lang }),
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json())
+      .then((data: { analysis?: VideoAnalysis }) => {
+        if (data.analysis) {
+          setAnalysis(data.analysis);
+          setStatus("done");
+        } else {
+          setStatus("error");
+        }
+      })
+      .catch((err: unknown) => {
+        if (!(err instanceof DOMException && err.name === "AbortError")) setStatus("error");
+      });
+    return () => ctrl.abort();
+  }, [video, lang]);
+
+  // The whole breakdown as plain text, for the section's Copy button.
+  const breakdownText = analysis
+    ? [
+        analysis.hook ? `${d.aHook}: ${analysis.hook}` : "",
+        analysis.whyItWorked ? `${d.aWhy}: ${analysis.whyItWorked}` : "",
+        analysis.titleCritique ? `${d.aTitleTips}: ${analysis.titleCritique}` : "",
+        analysis.thumbnailCritique ? `${d.aThumbTips}: ${analysis.thumbnailCritique}` : "",
+        analysis.outline.length
+          ? `${d.aOutline}:\n${analysis.outline.map((x) => `• ${x}`).join("\n")}`
+          : "",
+        analysis.takeaways.length
+          ? `${d.aTakeaways}:\n${analysis.takeaways.map((x) => `• ${x}`).join("\n")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n")
+    : "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -91,7 +214,7 @@ export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: (
           <div className="flex min-w-0 items-center gap-2">
             <OutlierBadge score={video.outlierScore} tier={video.tier} size="sm" />
             <span className="truncate text-xs text-zinc-400">
-              {formatCompact(video.views, lang)} views · {timeAgo(video.publishedAt, lang)}
+              {formatCompact(video.views, lang)} {d.viewsWord} · {timeAgo(video.publishedAt, lang)}
             </span>
           </div>
           <button
@@ -107,24 +230,47 @@ export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: (
         {/* Scrollable body */}
         <div className="min-h-0 space-y-5 overflow-y-auto p-4">
           {/* Title */}
-          <Section label="Title" action={<CopyButton text={video.title} />}>
+          <Section label={d.secTitle} action={<CopyButton text={video.title} />}>
             <p className="rounded-lg bg-zinc-800/60 p-3 text-sm font-medium leading-snug text-zinc-100 ring-1 ring-inset ring-zinc-800">
               {video.title}
             </p>
           </Section>
 
-          {/* Idea (description) — hidden when the video has no description */}
-          {description && (
-            <Section label="Idea" action={<CopyButton text={description} />}>
-              <div className="max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-zinc-800/60 p-3 text-sm leading-relaxed text-zinc-300 ring-1 ring-inset ring-zinc-800">
-                {description}
+          {/* AI breakdown — the swipe-file analysis */}
+          <Section
+            label={d.breakdownHeading}
+            action={status === "done" && analysis ? <CopyButton text={breakdownText} /> : undefined}
+          >
+            {status === "loading" ? (
+              <AnalysisSkeleton text={d.analyzingVideo} />
+            ) : status === "error" || !analysis ? (
+              <p className="rounded-lg bg-zinc-800/40 p-3 text-sm text-zinc-400 ring-1 ring-inset ring-zinc-800">
+                {d.analysisUnavailable}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <AItem icon={Sparkles} label={d.aHook}>
+                  {analysis.hook}
+                </AItem>
+                <AItem icon={TrendingUp} label={d.aWhy}>
+                  {analysis.whyItWorked}
+                </AItem>
+                <AItem icon={Type} label={d.aTitleTips}>
+                  {analysis.titleCritique}
+                </AItem>
+                <AItem icon={ImageIcon} label={d.aThumbTips}>
+                  {analysis.thumbnailCritique}
+                </AItem>
+                <AList icon={ListOrdered} label={d.aOutline} items={analysis.outline} />
+                <AList icon={Lightbulb} label={d.aTakeaways} items={analysis.takeaways} />
+                <p className="pt-0.5 text-[10px] text-zinc-600">{d.aiDisclaimer}</p>
               </div>
-            </Section>
-          )}
+            )}
+          </Section>
 
           {/* Embedded video */}
           <Section
-            label="Video"
+            label={d.secVideo}
             action={
               <a
                 href={watchUrl}
@@ -133,7 +279,7 @@ export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: (
                 className="inline-flex items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300 ring-1 ring-inset ring-zinc-700 transition hover:bg-zinc-700 hover:text-zinc-100"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                Open
+                {d.openWord}
               </a>
             }
           >
@@ -146,27 +292,6 @@ export function VideoModal({ video, onClose }: { video: VideoOutlier; onClose: (
                 className="h-full w-full"
               />
             </div>
-          </Section>
-
-          {/* Thumbnail export */}
-          <Section
-            label="Thumbnail"
-            action={
-              <a
-                href={`/api/thumbnail?id=${video.id}`}
-                download={`${video.id}.jpg`}
-                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-rose-500 to-orange-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:brightness-110"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download
-              </a>
-            }
-          >
-            <img
-              src={video.thumbnail}
-              alt=""
-              className="w-full rounded-lg ring-1 ring-inset ring-zinc-800"
-            />
           </Section>
         </div>
       </div>

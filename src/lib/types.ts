@@ -25,6 +25,8 @@ export interface VideoOutlier {
   format?: "short" | "long";
   /** Full video description (for the swipe-file modal). */
   description?: string;
+  /** Channel avatar — shown on cross-channel feeds (e.g. Top breakouts). */
+  channelThumbnail?: string;
 }
 
 export interface ChannelInfo {

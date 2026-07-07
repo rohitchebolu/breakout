@@ -176,6 +176,44 @@ export async function getChannelVideos(channel: RawChannel, max = 50): Promise<R
   return fetchVideos(videoIds.slice(0, max), channel.title);
 }
 
+/** Discover channels for a topic (Telugu-biased). Returns channel IDs. */
+export async function searchChannels(query: string, max = 15): Promise<string[]> {
+  const search = await yt<{ items?: Array<{ id?: { channelId?: string } }> }>("search", {
+    part: "snippet",
+    type: "channel",
+    q: query,
+    regionCode: "IN",
+    relevanceLanguage: "te",
+    maxResults: Math.min(max, 50),
+  });
+  return (search.items ?? [])
+    .map((it) => it.id?.channelId)
+    .filter((v): v is string => Boolean(v));
+}
+
+/** Batch-fetch channel details (uploads playlist, subs, avatar) for many IDs. */
+export async function getChannelsBatch(ids: string[]): Promise<RawChannel[]> {
+  const out: RawChannel[] = [];
+  for (const group of chunk(ids, 50)) {
+    const data = await yt<{ items?: RawChannelItem[] }>("channels", {
+      part: "snippet,statistics,contentDetails",
+      id: group.join(","),
+    });
+    for (const item of data.items ?? []) {
+      out.push({
+        id: item.id,
+        title: item.snippet?.title ?? "",
+        thumbnail: bestThumb(item.snippet?.thumbnails),
+        subscribers: numeric(item.statistics?.subscriberCount),
+        videoCount: numeric(item.statistics?.videoCount),
+        totalViews: numeric(item.statistics?.viewCount),
+        uploadsPlaylistId: item.contentDetails?.relatedPlaylists?.uploads,
+      });
+    }
+  }
+  return out;
+}
+
 const TELUGU_SCRIPT = /[ఀ-౿]/;
 
 /** Whether a video is Telugu content — by audio language, script, or keyword. */

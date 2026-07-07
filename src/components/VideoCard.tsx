@@ -85,7 +85,19 @@ export function VideoCard({
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-100">
           {video.title}
         </h3>
-        {showChannel && <p className="truncate text-xs text-zinc-400">{video.channelTitle}</p>}
+        {showChannel && (
+          <div className="flex min-w-0 items-center gap-1.5">
+            {video.channelThumbnail && (
+              <img
+                src={video.channelThumbnail}
+                alt=""
+                loading="lazy"
+                className="h-4 w-4 shrink-0 rounded-full"
+              />
+            )}
+            <p className="truncate text-xs text-zinc-400">{video.channelTitle}</p>
+          </div>
+        )}
         <div className="mt-auto flex items-center gap-1.5 pt-1 text-xs text-zinc-500">
           <span className="font-medium text-zinc-300">
             {formatCompact(video.views, lang)} {d.viewsWord}

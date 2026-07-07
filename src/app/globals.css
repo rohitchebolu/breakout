@@ -34,6 +34,38 @@ body {
   animation: pop-in 0.12s ease-out;
 }
 
+/* Sparkling CTA button — a shimmer sheen sweep plus a soft glow pulse. */
+@keyframes cta-shimmer {
+  0% {
+    transform: translateX(-160%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(320%) skewX(-12deg);
+  }
+}
+.cta-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: cta-shimmer 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cta-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 1px rgba(244, 63, 94, 0.55);
+  }
+}
+.cta-glow {
+  animation: cta-glow 2.6s ease-in-out infinite;
+}
+
 /* Thin, dark scrollbars to match the theme. */
 * {
   scrollbar-color: #3f3f46 transparent;
