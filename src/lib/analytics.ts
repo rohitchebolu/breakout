@@ -4,6 +4,7 @@
 
 import { bumpCounters, readCounters } from "./store";
 import { categories } from "./creators";
+import { getFeedbackSummary, type FeedbackSummary } from "./feedback";
 
 const day = () => new Date().toISOString().slice(0, 10);
 
@@ -24,6 +25,7 @@ export interface Analytics {
   byCategory: { key: string; label: string; count: number }[];
   byLang: { en: number; te: number };
   daily: { date: string; search: number; analyze: number; breakouts: number }[];
+  feedback: FeedbackSummary;
 }
 
 function lastNDays(n: number): string[] {
@@ -49,7 +51,7 @@ export async function getAnalytics(): Promise<Analytics> {
     ...days.map((d) => `an:d:${d}:analyze`),
     ...days.map((d) => `an:d:${d}:breakouts`),
   ];
-  const v = await readCounters(keys);
+  const [v, feedback] = await Promise.all([readCounters(keys), getFeedbackSummary()]);
 
   const catStart = 5;
   const dailyStart = catStart + categories.length;
@@ -65,5 +67,6 @@ export async function getAnalytics(): Promise<Analytics> {
       analyze: v[dailyStart + n + j],
       breakouts: v[dailyStart + 2 * n + j],
     })),
+    feedback,
   };
 }

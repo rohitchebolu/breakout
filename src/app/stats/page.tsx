@@ -2,8 +2,16 @@
 
 import { useEffect, useState } from "react";
 import type { Analytics } from "@/lib/analytics";
+import type { Sentiment } from "@/lib/feedback";
+import { timeAgo } from "@/lib/format";
 
 const TKEY = "breakout.stats.token";
+
+const SENTIMENT_TAG: Record<Sentiment, { label: string; cls: string }> = {
+  love: { label: "Love", cls: "bg-emerald-500/15 text-emerald-300" },
+  meh: { label: "Okay", cls: "bg-amber-500/15 text-amber-300" },
+  issue: { label: "Issue", cls: "bg-rose-500/15 text-rose-300" },
+};
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
@@ -172,6 +180,58 @@ export default function StatsPage() {
             <span>{data.daily[0]?.date.slice(5)}</span>
             <span>{data.daily[data.daily.length - 1]?.date.slice(5)}</span>
           </div>
+        </section>
+
+        <section className="rounded-xl bg-zinc-900 p-4 ring-1 ring-inset ring-zinc-800">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Feedback
+            </h2>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
+                Love {data.feedback.bySentiment.love}
+              </span>
+              <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-amber-300">
+                Okay {data.feedback.bySentiment.meh}
+              </span>
+              <span className="rounded-md bg-rose-500/15 px-1.5 py-0.5 text-rose-300">
+                Issue {data.feedback.bySentiment.issue}
+              </span>
+            </div>
+          </div>
+
+          {data.feedback.recent.length === 0 ? (
+            <p className="py-4 text-center text-xs text-zinc-600">No feedback yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {data.feedback.recent.map((f, i) => (
+                <li
+                  key={i}
+                  className="rounded-lg bg-zinc-950/50 p-3 ring-1 ring-inset ring-zinc-800"
+                >
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-500">
+                    <span className="flex items-center gap-1.5">
+                      {f.sentiment && (
+                        <span
+                          className={`rounded px-1.5 py-0.5 font-medium ${SENTIMENT_TAG[f.sentiment].cls}`}
+                        >
+                          {SENTIMENT_TAG[f.sentiment].label}
+                        </span>
+                      )}
+                      <span className="uppercase">{f.lang}</span>
+                      {f.path && f.path !== "/" && <span className="text-zinc-600">{f.path}</span>}
+                    </span>
+                    <span>{timeAgo(f.at, "en")}</span>
+                  </div>
+                  {f.message && (
+                    <p className="mt-1.5 whitespace-pre-wrap break-words text-sm text-zinc-200">
+                      {f.message}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </main>

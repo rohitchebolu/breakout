@@ -75,6 +75,19 @@ export interface Dict {
   analysisUnavailable: string;
   aiDisclaimer: string;
   trendingNow: string;
+  // feedback
+  fbButton: string;
+  fbTitle: string;
+  fbSubtitle: string;
+  fbLove: string;
+  fbMeh: string;
+  fbIssue: string;
+  fbPlaceholder: string;
+  fbSend: string;
+  fbSending: string;
+  fbThanks: string;
+  fbError: string;
+  fbClose: string;
   // seo footer
   aboutTitle: string;
   aboutBody: string;
@@ -156,6 +169,18 @@ export const translations: Record<Lang, Dict> = {
     analysisUnavailable: "Couldn't break this one down — open it on YouTube instead.",
     aiDisclaimer: "AI-generated — sanity-check before using.",
     trendingNow: "Trending now",
+    fbButton: "Feedback",
+    fbTitle: "Send feedback",
+    fbSubtitle: "Found a bug or have an idea? We read every note.",
+    fbLove: "Love it",
+    fbMeh: "It's okay",
+    fbIssue: "Something's off",
+    fbPlaceholder: "Tell us more (optional)…",
+    fbSend: "Send",
+    fbSending: "Sending…",
+    fbThanks: "Thanks for the feedback! 🙌",
+    fbError: "Couldn't send — please try again.",
+    fbClose: "Close",
     aboutTitle: "About Breakout",
     aboutBody:
       "Breakout is a free YouTube outlier finder made for Telugu creators. Paste any channel and instantly see its breakout videos — the ones that got far more views than the channel usually gets — so you can copy the ideas, titles, and thumbnails that actually go viral.",
@@ -254,6 +279,18 @@ export const translations: Record<Lang, Dict> = {
     analysisUnavailable: "దీన్ని analyze చెయ్యలేకపోయా — YouTube లో చూడు.",
     aiDisclaimer: "AI generate చేసింది — use చేసేముందు ఒకసారి check చెయ్.",
     trendingNow: "ఇప్పుడు trending",
+    fbButton: "Feedback",
+    fbTitle: "Feedback ఇవ్వు",
+    fbSubtitle: "Bug కనిపించిందా, idea ఉందా? ప్రతి note చదువుతాం.",
+    fbLove: "నచ్చింది",
+    fbMeh: "ఓకే",
+    fbIssue: "ఏదో తేడా ఉంది",
+    fbPlaceholder: "ఇంకా చెప్పు (optional)…",
+    fbSend: "పంపు",
+    fbSending: "పంపుతున్నా…",
+    fbThanks: "Feedback కి thanks! 🙌",
+    fbError: "పంపలేకపోయా — మళ్ళీ try చెయ్.",
+    fbClose: "మూసివేయి",
     aboutTitle: "Breakout గురించి",
     aboutBody:
       "Breakout అనేది Telugu creators కోసం ఉచిత YouTube outlier finder. ఏ channel అయినా paste చెయ్, దాని breakout videos — channel కి మామూలుగా వచ్చే views కంటే చాలా ఎక్కువ views వచ్చిన videos — వెంటనే చూడు. ఏ idea, title, thumbnail viral అయ్యిందో copy చెయ్.",

@@ -7,6 +7,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { StatsSummary } from "@/components/StatsSummary";
 import { ResultsGrid, SkeletonGrid } from "@/components/ResultsGrid";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { TopCreators } from "@/components/TopCreators";
 import { Dropdown } from "@/components/Dropdown";
 import { useLang } from "@/components/LanguageProvider";
@@ -170,6 +171,7 @@ export default function Home() {
       </main>
 
       <SeoFooter />
+      <FeedbackWidget />
     </div>
   );
 }

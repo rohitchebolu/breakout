@@ -202,3 +202,44 @@ export async function readCounters(keys: string[]): Promise<number[]> {
     return keys.map(() => 0);
   }
 }
+
+// --- capped lists (e.g. feedback) ----------------------------------------------
+
+/**
+ * Prepend a value to a list (newest first) and trim it to `cap` items, so the
+ * list can never grow without bound. Best-effort — never throws, because a
+ * storage hiccup must not break a user-facing write.
+ */
+export async function pushList(key: string, value: string, cap: number): Promise<void> {
+  try {
+    if (hasRedis) {
+      await redisPipeline([
+        ["LPUSH", key, value],
+        ["LTRIM", key, 0, cap - 1],
+      ]);
+      return;
+    }
+    const cur = memGet(key);
+    const arr: string[] = cur ? (JSON.parse(cur) as string[]) : [];
+    arr.unshift(value);
+    if (arr.length > cap) arr.length = cap;
+    mem.set(key, { value: JSON.stringify(arr), expiresAt: Number.MAX_SAFE_INTEGER });
+  } catch {
+    // best-effort
+  }
+}
+
+/** Read up to `limit` items from a capped list (newest first). */
+export async function readList(key: string, limit: number): Promise<string[]> {
+  try {
+    if (hasRedis) {
+      const res = (await redis(["LRANGE", key, 0, limit - 1])) as string[] | null;
+      return res ?? [];
+    }
+    const cur = memGet(key);
+    const arr: string[] = cur ? (JSON.parse(cur) as string[]) : [];
+    return arr.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
